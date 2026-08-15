@@ -1,0 +1,13 @@
+// Title: Mass download from a cloud application by one account
+// Severity: High | ATT&CK: T1530 Data from Cloud Storage
+// Data: CloudAppEvents (Defender for Cloud Apps)
+// Tune: Adjust thresholds for backup, eDiscovery, migration, and sanctioned synchronization accounts.
+let thresholdEvents = 100;
+let thresholdObjects = 75;
+CloudAppEvents
+| where Timestamp > ago(1d)
+| where ActionType has_any ("Download", "Downloaded", "FileDownloaded")
+| summarize DownloadEvents=count(), DistinctObjects=dcount(ObjectId), Applications=make_set(Application, 10), Objects=make_set(ObjectName, 50), IPAddresses=make_set(IPAddress, 10) by AccountId, AccountDisplayName, bin(Timestamp, 15m)
+| where DownloadEvents >= thresholdEvents and DistinctObjects >= thresholdObjects
+| project Timestamp, AccountId, AccountDisplayName, DownloadEvents, DistinctObjects, Applications, IPAddresses, Objects
+| order by DownloadEvents desc

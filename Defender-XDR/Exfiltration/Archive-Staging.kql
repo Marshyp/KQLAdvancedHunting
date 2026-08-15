@@ -1,0 +1,15 @@
+// Title: Large archive staging in a user-writable location
+// Severity: Medium | ATT&CK: T1560.001 Archive Collected Data
+// Data: DeviceFileEvents (Defender for Endpoint)
+// Tune: Adjust size threshold and allowlist approved packaging, backup, and software-build processes.
+let minimumSize = 100 * 1024 * 1024;
+let archiveExtensions = dynamic(["zip", "7z", "rar", "tar", "gz", "tgz"]);
+DeviceFileEvents
+| where Timestamp > ago(1d) and ActionType in~ ("FileCreated", "FileRenamed")
+| extend Extension=tolower(tostring(split(FileName, ".")[-1]))
+| where Extension in (archiveExtensions)
+| where FolderPath has_any ("\\Users\\", "\\ProgramData\\", "\\Windows\\Temp\\")
+| where FileSize >= minimumSize
+| where InitiatingProcessFileName in~ ("7z.exe", "7za.exe", "rar.exe", "winrar.exe", "tar.exe", "powershell.exe", "pwsh.exe", "cmd.exe")
+| project Timestamp, DeviceName, InitiatingProcessAccountName, FileName, FolderPath, FileSize, SHA1, InitiatingProcessFileName, InitiatingProcessCommandLine, InitiatingProcessSHA1
+| order by FileSize desc

@@ -1,0 +1,2 @@
+UserPrincipalName,RiskReason,ReviewOwner,Enabled
+high-risk-user@contoso.com,Replace with a monitored high-risk identity,SOC,false

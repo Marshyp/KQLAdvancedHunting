@@ -1,0 +1,16 @@
+// Title: Suspicious Run key or Startup folder persistence
+// Severity: High | ATT&CK: T1060 Registry Run Keys / Startup Folder
+// Data: DeviceRegistryEvents, DeviceFileEvents (Defender for Endpoint)
+// Tune: Allowlist approved application installers and managed logon agents by signer, hash, and exact value data.
+let registryPersistence = DeviceRegistryEvents
+| where Timestamp > ago(1d)
+| where RegistryKey has_any (@"\Software\Microsoft\Windows\CurrentVersion\Run", @"\Software\Microsoft\Windows\CurrentVersion\RunOnce")
+| where ActionType in~ ("RegistryValueSet", "RegistryKeyCreated")
+| project Timestamp, DeviceId, DeviceName, AccountName=InitiatingProcessAccountName, PersistenceType="RegistryRunKey", Artifact=strcat(RegistryKey, "\\", RegistryValueName), Value=RegistryValueData, InitiatingProcessFileName, InitiatingProcessCommandLine, InitiatingProcessSHA1;
+let startupPersistence = DeviceFileEvents
+| where Timestamp > ago(1d)
+| where FolderPath has @"\Microsoft\Windows\Start Menu\Programs\Startup\"
+| where ActionType in~ ("FileCreated", "FileRenamed", "FileModified")
+| project Timestamp, DeviceId, DeviceName, AccountName=InitiatingProcessAccountName, PersistenceType="StartupFolder", Artifact=FolderPath, Value=FileName, InitiatingProcessFileName, InitiatingProcessCommandLine, InitiatingProcessSHA1;
+union registryPersistence, startupPersistence
+| order by Timestamp desc

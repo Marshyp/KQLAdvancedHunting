@@ -1,4 +1,4 @@
-// Title: Script interpreter download-to-execution chain
+// Title: LOLBin download-to-execution chain
 // Severity: High | ATT&CK: T1059 Command and Scripting Interpreter, T1105 Ingress Tool Transfer
 // Data: DeviceNetworkEvents, DeviceProcessEvents (Defender for Endpoint)
 // Description: Correlates outbound network activity by a script utility with a child process shortly afterward.

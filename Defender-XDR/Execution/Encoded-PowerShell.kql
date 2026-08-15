@@ -1,0 +1,12 @@
+// Title: Encoded or obfuscated PowerShell execution
+// Severity: High | ATT&CK: T1059.001 PowerShell, T1027 Obfuscated Files or Information
+// Data: DeviceProcessEvents (Defender for Endpoint)
+// Description: Finds PowerShell launched with common encoding, hidden-window, or in-memory decoding indicators.
+// Tune: Exclude tightly scoped administration scripts only by known parent, signer, account, and command pattern.
+DeviceProcessEvents
+| where Timestamp > ago(1d)
+| where FileName in~ ("powershell.exe", "pwsh.exe")
+| where ProcessCommandLine has_any ("-enc", "-encodedcommand", "FromBase64String", "-w hidden", "-windowstyle hidden", "Invoke-Expression", " IEX ")
+| extend EncodedToken = extract(@"(?i)(?:-enc(?:odedcommand)?\s+)([A-Za-z0-9+/=]{20,})", 1, ProcessCommandLine)
+| project Timestamp, DeviceName, AccountName, FileName, ProcessCommandLine, EncodedToken, ProcessIntegrityLevel, InitiatingProcessFileName, InitiatingProcessCommandLine, SHA1
+| order by Timestamp desc
