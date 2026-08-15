@@ -1,0 +1,22 @@
+// Title: Periodic beaconing to a rare remote domain
+// Severity: Medium | ATT&CK: T1071.001 Web Protocols
+// Data: DeviceNetworkEvents
+// Description: Finds repeated connections with low timing variance to domains seen on few devices.
+// Tune: Allowlist monitoring, update, SSO, and management domains; adjust cadence and prevalence.
+let lookback = 1d;
+let domainPrevalence = DeviceNetworkEvents
+| where Timestamp > ago(lookback) and isnotempty(RemoteUrl)
+| summarize Devices=dcount(DeviceId) by RemoteUrl
+| where Devices <= 3;
+DeviceNetworkEvents
+| where Timestamp > ago(lookback) and ActionType == "ConnectionSuccess" and isnotempty(RemoteUrl)
+| join kind=inner domainPrevalence on RemoteUrl
+| sort by DeviceId asc, RemoteUrl asc, Timestamp asc
+| serialize
+| extend PreviousTime=prev(Timestamp), PreviousDevice=prev(DeviceId), PreviousUrl=prev(RemoteUrl)
+| where DeviceId == PreviousDevice and RemoteUrl == PreviousUrl
+| extend IntervalSeconds=datetime_diff("second", Timestamp, PreviousTime)
+| where IntervalSeconds between (20 .. 3600)
+| summarize Connections=count()+1, AvgInterval=avg(IntervalSeconds), IntervalStdDev=stdev(IntervalSeconds), FirstSeen=min(PreviousTime), LastSeen=max(Timestamp), RemoteIPs=make_set(RemoteIP, 10) by DeviceId, DeviceName, RemoteUrl, InitiatingProcessFileName, InitiatingProcessCommandLine, Devices
+| where Connections >= 10 and IntervalStdDev < AvgInterval * 0.20
+| order by Connections desc
