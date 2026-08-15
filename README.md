@@ -16,4 +16,5 @@ Start in [`detections/`](detections/) for Defender XDR hunts or [`sentinel-analy
 
 [LinkedIn](https://www.linkedin.com/in/marshsecurity) · [Mastodon](https://infosec.exchange/@katos) · [Blog](https://marshsecurity.org) · [Microsoft Docs Tracker](https:/docstracker.marshsecurity.org) · [Microsoft CVE Explorer](https://docstracker.marshsecurity.org/cve)
 
-Contributions are welcome—see [`CONTRIBUTING.md`](CONTRIBUTING.md). Licensed under [MIT](LICENSE).
+Contributions are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md). 
+Licensed under [MIT](LICENSE).
