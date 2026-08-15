@@ -1,0 +1,10 @@
+// Title: Windows audit log clearing or audit policy weakening
+// Severity: High | ATT&CK: T1070.001 Clear Windows Event Logs, T1562.002 Disable Windows Event Logging
+// Data: DeviceProcessEvents
+// Tune: Exclude documented recovery workflows and tightly scoped administrative automation.
+DeviceProcessEvents
+| where Timestamp > ago(1d)
+| where (FileName =~ "wevtutil.exe" and ProcessCommandLine matches regex @"(?i)\s(cl|clear-log)\s")
+    or (FileName =~ "powershell.exe" and ProcessCommandLine has_any ("Clear-EventLog", "Remove-EventLog"))
+    or (FileName =~ "auditpol.exe" and ProcessCommandLine has_any ("/clear", "/remove", "/set") and ProcessCommandLine has_any ("disable", "no auditing", "/success:disable", "/failure:disable"))
+| project Timestamp, DeviceName, AccountName, FileName, ProcessCommandLine, ProcessIntegrityLevel, InitiatingProcessFileName, InitiatingProcessCommandLine

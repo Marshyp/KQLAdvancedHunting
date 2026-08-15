@@ -1,0 +1,10 @@
+// Title: Microsoft Defender protection or exclusion change
+// Severity: High | ATT&CK: T1562.001 Impair Defenses
+// Data: DeviceProcessEvents
+// Tune: Allowlist approved security-management tooling and maintenance accounts.
+let tools = dynamic(["powershell.exe","pwsh.exe","mpcmdrun.exe","reg.exe","cmd.exe"]);
+DeviceProcessEvents
+| where Timestamp > ago(1d)
+| where FileName in~ (tools)
+| where ProcessCommandLine has_any ("Add-MpPreference", "Set-MpPreference", "DisableRealtimeMonitoring", "ExclusionPath", "ExclusionProcess", "ExclusionExtension", "DisableBehaviorMonitoring", "DisableIOAVProtection", "DisableScriptScanning", "WinDefend")
+| project Timestamp, DeviceName, AccountName, FileName, ProcessCommandLine, ProcessIntegrityLevel, InitiatingProcessFileName, InitiatingProcessCommandLine, SHA1
