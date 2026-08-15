@@ -1,0 +1,29 @@
+id: b87bcf6f-b14d-45d6-96fc-f5c823df8cdc
+name: Windows security event log cleared
+description: Detects Security event 1102, generated when the Windows Security audit log is cleared.
+severity: High
+status: Available
+requiredDataConnectors:
+  - connectorId: WindowsSecurityEvents
+    dataTypes: [SecurityEvent]
+queryFrequency: PT5M
+queryPeriod: PT10M
+triggerOperator: gt
+triggerThreshold: 0
+tactics: [DefenseEvasion]
+relevantTechniques: [T1070.001]
+query: |
+  SecurityEvent
+  | where TimeGenerated > ago(10m) and EventID == 1102
+  | project TimeGenerated, Computer, Account, AccountType, Activity, EventSourceName, Channel
+entityMappings:
+  - entityType: Host
+    fieldMappings:
+      - identifier: FullName
+        columnName: Computer
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: Account
+version: 1.0.0
+kind: Scheduled
