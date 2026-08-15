@@ -1,0 +1,9 @@
+// Title: Service creation from a user-writable or remote path
+// Severity: High | ATT&CK: T1543.003 Windows Service
+// Data: DeviceProcessEvents
+// Tune: Add exact paths used by approved software deployment products.
+DeviceProcessEvents
+| where Timestamp > ago(1d)
+| where FileName =~ "sc.exe" and ProcessCommandLine has "create"
+| where ProcessCommandLine has_any ("\\Users\\", "\\ProgramData\\", "\\Temp\\", "\\AppData\\", "\\\\", "http://", "https://")
+| project Timestamp, DeviceName, AccountName, ProcessCommandLine, ProcessIntegrityLevel, InitiatingProcessFileName, InitiatingProcessCommandLine, SHA1
