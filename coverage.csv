@@ -1,0 +1,16 @@
+title,platform,category,severity,attack_techniques,file
+First-contact email followed by an allowed URL click,Defender XDR,Initial Access,Medium,T1566.002,detections/initial-access/suspicious-first-contact-url-click.kql
+Script interpreter download-to-execution chain,Defender XDR,Execution,High,T1059;T1105,detections/execution/suspicious-script-interpreter-download-chain.kql
+Office application spawning a LOLBin,Defender XDR,Execution,High,T1204.002;T1218,detections/execution/office-spawns-lolbin.kql
+Encoded PowerShell scheduled task,Defender XDR,Persistence,High,T1053.005,detections/persistence/encoded-powershell-scheduled-task.kql
+Service creation from suspicious path,Defender XDR,Privilege Escalation,High,T1543.003,detections/privilege-escalation/service-creation-suspicious-path.kql
+Defender exclusion or protection change,Defender XDR,Defense Evasion,High,T1562.001,detections/defense-evasion/defender-exclusion-or-protection-change.kql
+Security log cleared or audit disabled,Defender XDR,Defense Evasion,High,T1070.001;T1562.002,detections/defense-evasion/security-log-cleared-or-audit-disabled.kql
+Rapid Active Directory reconnaissance,Defender XDR,Discovery,Medium,T1087;T1069;T1018,detections/discovery/rapid-active-directory-reconnaissance.kql
+LSASS credential dumping indicators,Defender XDR,Credential Access,High,T1003.001,detections/credential-access/lsass-access-or-dump-tools.kql
+SMB fan-out followed by remote execution,Defender XDR,Lateral Movement,High,T1021.002;T1569.002,detections/lateral-movement/smb-fanout-followed-by-remote-execution.kql
+Rare-domain periodic beaconing,Defender XDR,Command and Control,Medium,T1071.001,detections/command-and-control/rare-domain-periodic-beaconing.kql
+Suspicious DoH or DNS tunneling tool,Defender XDR,Network Events,Medium,T1071.004,detections/network-events/dns-over-https-or-tunneling-tools.kql
+Password spray across Entra accounts,Microsoft Sentinel,Initial Access,High,T1110.003,sentinel-analytics/initial-access/password-spray-signinlogs.yaml
+Windows security event log cleared,Microsoft Sentinel,Defense Evasion,High,T1070.001,sentinel-analytics/defense-evasion/windows-security-log-cleared.yaml
+Role assignment followed by privileged operation,Microsoft Sentinel,Privilege Escalation,High,T1098;T1496,sentinel-analytics/privilege-escalation/role-assignment-then-privileged-operation.yaml
