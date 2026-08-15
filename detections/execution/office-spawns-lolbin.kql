@@ -1,0 +1,11 @@
+// Title: Office application spawning a living-off-the-land binary
+// Severity: High | ATT&CK: T1204.002 Malicious File, T1218 System Binary Proxy Execution
+// Data: DeviceProcessEvents
+// Tune: Exclude signed enterprise add-ins only after validating their exact command lines.
+let office = dynamic(["winword.exe","excel.exe","powerpnt.exe","outlook.exe","onenote.exe","msaccess.exe"]);
+let lolbins = dynamic(["powershell.exe","pwsh.exe","cmd.exe","mshta.exe","rundll32.exe","regsvr32.exe","wscript.exe","cscript.exe","certutil.exe","bitsadmin.exe"]);
+DeviceProcessEvents
+| where Timestamp > ago(1d)
+| where InitiatingProcessFileName in~ (office) and FileName in~ (lolbins)
+| project Timestamp, DeviceName, AccountName, InitiatingProcessFileName, InitiatingProcessCommandLine, FileName, ProcessCommandLine, ProcessIntegrityLevel, SHA1, InitiatingProcessSHA1
+| order by Timestamp desc
