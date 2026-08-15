@@ -1,8 +1,8 @@
 ![Sentinel Owl defending a digital environment](assets/sentinel-owl-banner.png)
 
-# KQL Detection Forge
+# KQL Detections
 
-Welcome to a curated collection of production-minded KQL (Kusto Query Language) detections for Microsoft Defender XDR Advanced Hunting and Microsoft Sentinel. It helps SOC analysts, incident responders, and detection engineers hunt for sophisticated attacks and turn useful hypotheses into tunable analytics.
+Welcome! This repository contains a collection of production-minded KQL (Kusto Query Language) detections for Microsoft Defender XDR Advanced Hunting and Microsoft Sentinel. It helps SOC analysts, incident responders, and detection engineers hunt for sophisticated attacks and turn useful hypotheses into tunable analytics.
 
 ## Capabilities, tables & coverage
 
@@ -14,6 +14,6 @@ Start in [`detections/`](detections/) for Defender XDR hunts or [`sentinel-analy
 
 ## Connect with me
 
-Replace `YOUR_PROFILE` / `YOUR_DOMAIN` before publishing: [LinkedIn](https://www.linkedin.com/in/YOUR_PROFILE) · [Mastodon](https://mastodon.social/@YOUR_PROFILE) · [Blog](https://YOUR_DOMAIN) · [Microsoft Docs Tracker](https://github.com/YOUR_PROFILE/microsoft-docs-tracker) · [Microsoft CVE Explorer](https://github.com/YOUR_PROFILE/microsoft-cve-explorer)
+Replace `YOUR_PROFILE` / `YOUR_DOMAIN` before publishing: [LinkedIn](https://www.linkedin.com/in/marshsecurity) · [Mastodon](https://infosec.exchange/@katos) · [Blog](https://marshsecurity.org) · [Microsoft Docs Tracker](https:/docstracker.marshsecurity.org) · [Microsoft CVE Explorer](https://docstracker.marshsecurity.org/cve)
 
 Contributions are welcome—see [`CONTRIBUTING.md`](CONTRIBUTING.md). Licensed under [MIT](LICENSE).
