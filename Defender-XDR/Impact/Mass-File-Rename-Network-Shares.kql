@@ -1,0 +1,4 @@
+// Title: Mass file rename across network shares
+// Severity: High | ATT&CK: T1486 Data Encrypted for Impact
+// Data: DeviceFileEvents | Tune: Adjust thresholds and exclude sanctioned bulk migrations.
+DeviceFileEvents | where Timestamp>ago(1d) and ActionType=="FileRenamed" | where FolderPath startswith "\\\\" or isnotempty(ShareName) | extend NewExtension=tolower(tostring(split(FileName,".")[-1])),OldExtension=tolower(tostring(split(PreviousFileName,".")[-1])) | summarize RenameCount=count(),Files=dcount(PreviousFileName),Shares=make_set(ShareName,20),Paths=make_set(FolderPath,30),NewExtensions=make_set(NewExtension,20),OldExtensions=make_set(OldExtension,20) by DeviceId,DeviceName,InitiatingProcessAccountName,InitiatingProcessFileName,bin(Timestamp,10m) | where RenameCount>=100 and Files>=75 | project Timestamp,DeviceName,InitiatingProcessAccountName,InitiatingProcessFileName,RenameCount,Files,Shares,Paths,OldExtensions,NewExtensions

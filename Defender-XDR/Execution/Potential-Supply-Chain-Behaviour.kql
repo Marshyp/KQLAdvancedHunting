@@ -1,0 +1,7 @@
+// Title: Potential supply-chain behaviour from a trusted signed process
+// Severity: High | ATT&CK: T1195.002 Compromise Software Supply Chain
+// Data: DeviceProcessEvents, DeviceNetworkEvents, DeviceFileCertificateInfo | Tune: Build publisher-specific child and domain allowlists.
+let recent=DeviceProcessEvents | where Timestamp>ago(1d) | project ChildTime=Timestamp,DeviceId,DeviceName,ParentSHA1=InitiatingProcessSHA1,Parent=InitiatingProcessFileName,Child=FileName,ChildCommand=ProcessCommandLine,AccountName,ProcessId;
+let signed=DeviceFileCertificateInfo | where Timestamp>ago(7d) and IsSigned==true and IsTrusted==true | project ParentSHA1=SHA1,Signer=Signer;
+let baseline=DeviceProcessEvents | where Timestamp between (ago(30d)..ago(1d)) | summarize by DeviceId,Parent=InitiatingProcessFileName,Child=FileName;
+recent | join kind=inner signed on ParentSHA1 | join kind=leftanti baseline on DeviceId,Parent,Child | join kind=leftouter (DeviceNetworkEvents | where Timestamp>ago(1d) and ActionType=="ConnectionSuccess" | project NetTime=Timestamp,DeviceId,InitiatingProcessId,RemoteUrl,RemoteIP) on DeviceId | where isempty(NetTime) or (InitiatingProcessId==ProcessId and NetTime between (ChildTime..ChildTime+15m)) | project ChildTime,DeviceName,AccountName,Parent,Signer,Child,ChildCommand,RemoteUrl,RemoteIP,ParentSHA1

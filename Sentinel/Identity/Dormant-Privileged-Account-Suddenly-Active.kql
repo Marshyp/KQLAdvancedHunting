@@ -1,0 +1,7 @@
+// Title: Dormant privileged account suddenly active
+// Severity: High | ATT&CK: T1078.004 Cloud Accounts
+// Data: SigninLogs, AuditLogs | Tune: Set privileged group/role names and dormancy period for your tenant.
+let dormantDays=60d;
+let privilegedUsers=AuditLogs | where TimeGenerated > ago(180d) and OperationName has_any ("Add member to role","Add member to group") and TargetResources has_any ("Admin","Owner","Privileged") | mv-expand TargetResources | extend UPN=tostring(TargetResources.userPrincipalName) | where isnotempty(UPN) | distinct UPN;
+let prior=SigninLogs | where TimeGenerated between (ago(180d)..ago(dormantDays)) and ResultType==0 | summarize LastPrior=max(TimeGenerated) by UserPrincipalName;
+SigninLogs | where TimeGenerated > ago(1d) and ResultType==0 | join kind=inner privilegedUsers on $left.UserPrincipalName==$right.UPN | join kind=leftouter prior on UserPrincipalName | where isempty(LastPrior) or LastPrior < ago(dormantDays) | project TimeGenerated,UserPrincipalName,LastPrior,IPAddress,AppDisplayName,Location,DeviceDetail,ConditionalAccessStatus

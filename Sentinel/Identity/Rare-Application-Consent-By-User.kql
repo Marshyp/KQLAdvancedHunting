@@ -1,0 +1,5 @@
+// Title: Rare application consent by user
+// Severity: Medium | ATT&CK: T1098.003 Additional Cloud Roles
+// Data: AuditLogs | Tune: Allowlist sanctioned application IDs and publishers.
+let baseline=AuditLogs | where TimeGenerated between (ago(30d)..ago(1d)) and OperationName has_any ("Consent to application","Add OAuth2PermissionGrant") | mv-expand TargetResources | extend App=tostring(TargetResources.displayName),AppId=tostring(TargetResources.id) | summarize PriorConsents=count(),PriorUsers=dcount(tostring(InitiatedBy.user.userPrincipalName)) by App,AppId;
+AuditLogs | where TimeGenerated>ago(1d) and Result =~ "success" and OperationName has_any ("Consent to application","Add OAuth2PermissionGrant") | mv-expand TargetResources | extend App=tostring(TargetResources.displayName),AppId=tostring(TargetResources.id),UserPrincipalName=tostring(InitiatedBy.user.userPrincipalName),IPAddress=tostring(InitiatedBy.user.ipAddress) | join kind=leftouter baseline on App,AppId | where coalesce(PriorConsents,0)<3 or coalesce(PriorUsers,0)<2 | project TimeGenerated,UserPrincipalName,IPAddress,App,AppId,OperationName,PriorConsents,PriorUsers,AdditionalDetails

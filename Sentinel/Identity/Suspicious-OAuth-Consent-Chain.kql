@@ -1,0 +1,6 @@
+// Title: Suspicious OAuth consent chain
+// Severity: High | ATT&CK: T1098.003 Additional Cloud Roles
+// Data: AuditLogs, SigninLogs | Tune: Add high-impact permission strings used in your tenant.
+let consent=AuditLogs | where TimeGenerated>ago(1d) and Result =~ "success" and OperationName has_any ("Consent to application","Add OAuth2PermissionGrant") | extend UserPrincipalName=tostring(InitiatedBy.user.userPrincipalName),ConsentIP=tostring(InitiatedBy.user.ipAddress),Details=tostring(TargetResources) | where Details has_any ("Mail.ReadWrite","Files.ReadWrite.All","offline_access","Directory.ReadWrite.All","RoleManagement.ReadWrite.Directory") | project ConsentTime=TimeGenerated,UserPrincipalName,ConsentIP,Details,CorrelationId;
+let riskySignin=SigninLogs | where TimeGenerated>ago(1d) and ResultType==0 | where RiskLevelDuringSignIn in~ ("medium","high") or isempty(tostring(DeviceDetail.deviceId)) | project SigninTime=TimeGenerated,UserPrincipalName,SigninIP=IPAddress,AppDisplayName,Location,RiskLevelDuringSignIn;
+consent | join kind=inner riskySignin on UserPrincipalName | where ConsentTime between (SigninTime..SigninTime+2h) or ConsentIP==SigninIP | project ConsentTime,SigninTime,UserPrincipalName,ConsentIP,SigninIP,AppDisplayName,Location,RiskLevelDuringSignIn,Details,CorrelationId

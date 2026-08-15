@@ -20,3 +20,34 @@ Large archive staging,Defender XDR,Exfiltration,Medium,T1560.001,Defender-XDR/Ex
 Password spray across Entra accounts,Microsoft Sentinel,Identity,High,T1110.003,Sentinel/Identity/Password-Spray-SigninLogs.yaml
 Windows security event log cleared,Microsoft Sentinel,SIEM Protection,High,T1070.001,Sentinel/SIEM-Protection/Windows-Security-Log-Cleared.yaml
 Role assignment followed by privileged operation,Microsoft Sentinel,Azure,High,T1098;T1496,Sentinel/Azure/Role-Assignment-Then-Privileged-Operation.yaml
+High-risk user behaviour correlation engine,Microsoft Sentinel,Insider Risk,High,T1530;T1560;T1567;T1052,Sentinel/Insider-Risk/High-Risk-User-Behaviour-Correlation-Engine.kql
+User preparing to leave data movement scoring,Microsoft Sentinel,Insider Risk,High,T1530;T1560.001;T1567.002;T1052.001,Sentinel/Insider-Risk/User-Preparing-to-Leave-Data-Movement.kql
+Sensitive data followed by exfiltration channel,Microsoft Sentinel,Insider Risk,High,T1020;T1052.001;T1567.002,Sentinel/Insider-Risk/Sensitive-Data-Followed-By-Exfiltration-Channel.kql
+Dormant privileged account suddenly active,Microsoft Sentinel,Identity,High,T1078.004,Sentinel/Identity/Dormant-Privileged-Account-Suddenly-Active.kql
+New privilege followed by immediate sensitive action,Microsoft Sentinel,Identity,High,T1098;T1078,Sentinel/Identity/New-Privilege-Immediate-Sensitive-Action.kql
+Sequential privilege escalation chain,Microsoft Sentinel,Identity,High,T1098,Sentinel/Identity/Privilege-Escalation-Chain.kql
+Conditional Access weakening followed by risky sign-in,Microsoft Sentinel,Identity,High,T1562.007,Sentinel/Identity/Conditional-Access-Weakening-Risky-SignIn.kql
+Authentication method added before takeover,Microsoft Sentinel,Identity,High,T1098.005,Sentinel/Identity/Authentication-Method-Added-Before-Takeover.kql
+Break-glass account health pack,Microsoft Sentinel,Identity,High,T1078.004,Sentinel/Identity/Break-Glass-Account-Health-Pack.kql
+Rare application consent by user,Microsoft Sentinel,Identity,Medium,T1098.003,Sentinel/Identity/Rare-Application-Consent-By-User.kql
+Suspicious OAuth consent chain,Microsoft Sentinel,Identity,High,T1098.003,Sentinel/Identity/Suspicious-OAuth-Consent-Chain.kql
+Analytics rules that never fire,Microsoft Sentinel,SIEM Protection,Medium,,Sentinel/SIEM-Protection/Analytics-Rules-That-Never-Fire.kql
+Analytics rule sudden alert drop-off,Microsoft Sentinel,SIEM Protection,Medium,,Sentinel/SIEM-Protection/Analytics-Rule-Sudden-Alert-Drop-Off.kql
+Analytics rule noise detector,Microsoft Sentinel,SIEM Protection,Medium,,Sentinel/SIEM-Protection/Analytics-Rule-Noise-Detector.kql
+Broken detection dependency monitor,Microsoft Sentinel,SIEM Protection,High,,Sentinel/SIEM-Protection/Broken-Detection-Dependency-Monitor.kql
+Suspicious archive followed by network transfer,Defender XDR,Exfiltration,High,T1560.001;T1041,Defender-XDR/Exfiltration/Suspicious-Archive-Network-Transfer-Correlation.kql
+Mass file collection before USB activity,Defender XDR,Exfiltration,High,T1074.001;T1052.001,Defender-XDR/Exfiltration/Mass-File-Collection-Before-USB.kql
+First-seen administrative tool per device,Defender XDR,Discovery,Medium,T1018;T1219,Defender-XDR/Discovery/First-Seen-Administrative-Tool-Per-Device.kql
+Remote access tool installed and used quickly,Defender XDR,Persistence,High,T1219,Defender-XDR/Persistence/Remote-Access-Tool-Installed-And-Used-Quickly.kql
+Rclone exfiltration detection pack,Defender XDR,Exfiltration,High,T1567.002,Defender-XDR/Exfiltration/Rclone-Exfiltration-Detection-Pack.kql
+Credential dumping followed by lateral authentication,Defender XDR,Credential Access,High,T1003.001;T1021,Defender-XDR/Credential-Access/Credential-Dumping-Chain.kql
+Browser session theft correlation,Defender XDR,Credential Access,High,T1539;T1555.003,Defender-XDR/Credential-Access/Browser-Session-Theft-Correlation.kql
+Windows Credential Manager access by unexpected process,Defender XDR,Credential Access,High,T1555.004,Defender-XDR/Credential-Access/Windows-Credential-Manager-Unexpected-Process.kql
+NTDS SAM and SYSTEM collection behaviour,Defender XDR,Credential Access,High,T1003.002;T1003.003,Defender-XDR/Credential-Access/NTDS-SAM-SYSTEM-Collection.kql
+Encoded PowerShell network and file correlation,Defender XDR,Execution,High,T1059.001;T1105,Defender-XDR/Execution/Encoded-PowerShell-Network-File-Correlation.kql
+PowerShell downgrade or logging evasion,Defender XDR,Defense Evasion,High,T1562.001,Defender-XDR/Defense-Evasion/PowerShell-Downgrade-Logging-Evasion.kql
+Security product exclusion abuse,Defender XDR,Defense Evasion,High,T1562.001,Defender-XDR/Defense-Evasion/Security-Product-Exclusion-Abuse.kql
+EDR blind spot creation,Defender XDR,Defense Evasion,High,T1562.001,Defender-XDR/Defense-Evasion/EDR-Blind-Spot-Creation.kql
+RDP fan-out,Defender XDR,Lateral Movement,High,T1021.001,Defender-XDR/Lateral-Movement/RDP-Fan-Out.kql
+Mass file rename across network shares,Defender XDR,Impact,High,T1486,Defender-XDR/Impact/Mass-File-Rename-Network-Shares.kql
+Potential supply-chain behaviour,Defender XDR,Execution,High,T1195.002,Defender-XDR/Execution/Potential-Supply-Chain-Behaviour.kql

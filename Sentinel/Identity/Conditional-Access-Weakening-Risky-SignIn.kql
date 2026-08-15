@@ -1,0 +1,6 @@
+// Title: Conditional Access weakening followed by risky sign-in
+// Severity: High | ATT&CK: T1562.007 Disable or Modify Cloud Firewall
+// Data: AuditLogs, SigninLogs | Tune: Validate ModifiedProperties parsing against tenant audit format.
+let weakened=AuditLogs | where TimeGenerated > ago(1d) and OperationName =~ "Update conditional access policy" and Result =~ "success" | extend Actor=tostring(InitiatedBy.user.userPrincipalName),ActorIP=tostring(InitiatedBy.user.ipAddress),Changes=tostring(TargetResources) | where Changes has_any ("excludeUsers","excludeGroups","disabled","reportOnly") | project ChangeTime=TimeGenerated,Actor,ActorIP,PolicyChanges=Changes,CorrelationId;
+let risky=SigninLogs | where TimeGenerated > ago(1d) and ResultType==0 | where RiskLevelDuringSignIn in~ ("medium","high") or RiskState !in~ ("none","remediated") or ConditionalAccessStatus !~ "success" | project SigninTime=TimeGenerated,UserPrincipalName,IPAddress,AppDisplayName,Location,DeviceDetail,RiskLevelDuringSignIn,RiskState,ConditionalAccessStatus;
+weakened | join kind=inner risky on $left.Actor==$right.UserPrincipalName | where SigninTime between (ChangeTime..ChangeTime+2h) or IPAddress==ActorIP | project SigninTime,ChangeTime,UserPrincipalName,IPAddress,ActorIP,AppDisplayName,Location,RiskLevelDuringSignIn,RiskState,ConditionalAccessStatus,PolicyChanges,CorrelationId

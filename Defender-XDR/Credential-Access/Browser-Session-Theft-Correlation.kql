@@ -1,0 +1,5 @@
+// Title: Browser session theft followed by cloud session activity
+// Severity: High | ATT&CK: T1539, T1555.003
+// Data: DeviceFileEvents, AADSignInEventsBeta | Tune: Validate browser database paths and known session broker processes.
+let theft=DeviceFileEvents | where Timestamp>ago(1d) and FileName in~ ("Cookies","Login Data","Web Data","logins.json","key4.db") and InitiatingProcessFileName !in~ ("chrome.exe","msedge.exe","firefox.exe","brave.exe") | project TheftTime=Timestamp,DeviceName,Account=tolower(InitiatingProcessAccountUpn),AccessProcess=InitiatingProcessFileName,FolderPath;
+theft | join kind=inner (AADSignInEventsBeta | where Timestamp>ago(1d) and ErrorCode==0 | project SigninTime=Timestamp,Account=tolower(AccountUpn),IPAddress,Application,LogonType,DeviceName1=DeviceName) on Account | where SigninTime between (TheftTime..TheftTime+4h) and (isempty(DeviceName1) or DeviceName1!=DeviceName) | project SigninTime,TheftTime,Account,DeviceName,AccessProcess,FolderPath,IPAddress,Application,LogonType,CloudDevice=DeviceName1

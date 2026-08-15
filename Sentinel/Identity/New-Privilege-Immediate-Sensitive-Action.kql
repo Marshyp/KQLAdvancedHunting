@@ -1,0 +1,6 @@
+// Title: New privilege followed by an immediate sensitive action
+// Severity: High | ATT&CK: T1098 Account Manipulation, T1078 Valid Accounts
+// Data: AuditLogs | Tune: Adjust privileged operations and automation allowlists.
+let grants=AuditLogs | where TimeGenerated > ago(1d) and Result =~ "success" and OperationName has_any ("Add member to role","Add member to group","Add eligible member to role") | mv-expand TargetResources | extend TargetUPN=tostring(TargetResources.userPrincipalName) | where isnotempty(TargetUPN) | project GrantTime=TimeGenerated,TargetUPN,GrantOperation=OperationName,GrantedBy=tostring(InitiatedBy.user.userPrincipalName);
+let actions=AuditLogs | where TimeGenerated > ago(1d) and Result =~ "success" and OperationName has_any ("Update conditional access policy","Delete user","Reset user password","Add service principal credentials","Consent to application") | extend Actor=tostring(InitiatedBy.user.userPrincipalName) | project ActionTime=TimeGenerated,Actor,SensitiveOperation=OperationName,TargetResources;
+grants | join kind=inner actions on $left.TargetUPN==$right.Actor | where ActionTime between (GrantTime..GrantTime+1h) | project ActionTime,GrantTime,TargetUPN,GrantedBy,GrantOperation,SensitiveOperation,TargetResources

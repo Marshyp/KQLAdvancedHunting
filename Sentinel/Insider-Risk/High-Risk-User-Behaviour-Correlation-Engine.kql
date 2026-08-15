@@ -1,0 +1,10 @@
+// Title: High-risk user behaviour correlation engine
+// Severity: High | ATT&CK: T1530, T1560, T1567, T1052
+// Data: HighRiskUsers watchlist, CloudAppEvents, DeviceFileEvents, DeviceEvents, DeviceNetworkEvents
+// Tune: Adjust weights and thresholds; requires Defender XDR tables queryable from the Sentinel/Defender portal.
+let users=_GetWatchlist('HighRiskUsers') | where tobool(Enabled) | project Account=tolower(UserPrincipalName),RiskReason;
+let cloud=CloudAppEvents | where Timestamp>ago(1d) and ActionType has_any ("Download","Share") | summarize Downloads=countif(ActionType has "Download"),ExternalShares=countif(ActionType has "Share") by Account=tolower(AccountId),bin(Timestamp,1h);
+let archives=DeviceFileEvents | where Timestamp>ago(1d) and FileName matches regex @"(?i)\.(zip|7z|rar|tar|gz)$" | summarize Archives=count(),ArchiveBytes=sum(FileSize) by Account=tolower(InitiatingProcessAccountUpn),bin(Timestamp,1h);
+let usb=DeviceEvents | where Timestamp>ago(1d) and ActionType in~ ("UsbDriveMounted","UsbDriveMount") | summarize USBEvents=count() by Account=tolower(InitiatingProcessAccountUpn),bin(Timestamp,1h);
+let sharing=DeviceNetworkEvents | where Timestamp>ago(1d) and RemoteUrl has_any ("mega.nz","dropbox.com","wetransfer.com","file.io","gofile.io") | summarize FileShareConnections=count() by Account=tolower(InitiatingProcessAccountUpn),bin(Timestamp,1h);
+users | join kind=inner (union cloud,archives,usb,sharing | summarize Downloads=sum(Downloads),ExternalShares=sum(ExternalShares),Archives=sum(Archives),ArchiveBytes=sum(ArchiveBytes),USBEvents=sum(USBEvents),FileShareConnections=sum(FileShareConnections) by Account,Timestamp) on Account | extend Score=iff(Downloads>=50,25,0)+iff(ExternalShares>0,20,0)+iff(Archives>0,15,0)+iff(ArchiveBytes>500000000,15,0)+iff(USBEvents>0,15,0)+iff(FileShareConnections>=5,20,0) | where Score>=40 | project Timestamp,Account,RiskReason,Score,Downloads,ExternalShares,Archives,ArchiveBytes,USBEvents,FileShareConnections

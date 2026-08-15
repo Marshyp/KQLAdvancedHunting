@@ -1,0 +1,5 @@
+// Title: Analytics rule noise detector
+// Severity: Medium | Data: SecurityAlert, SecurityIncident | Tune: Align benign classifications with SOC workflow.
+let alerts=SecurityAlert | where TimeGenerated>ago(30d) | summarize Alerts=count(),DistinctEntities=dcount(CompromisedEntity),TopEntities=make_set(CompromisedEntity,20) by AlertName,AlertType;
+let incidents=SecurityIncident | where TimeGenerated>ago(30d) | summarize arg_max(TimeGenerated,*) by IncidentNumber | mv-expand RuleId=RelatedAnalyticRuleIds | summarize Incidents=count(),Benign=countif(Classification in~ ("BenignPositive","FalsePositive")) by RuleId=tostring(RuleId);
+alerts | extend RepetitionRatio=round(Alerts*1.0/max_of(DistinctEntities,1),2) | join kind=leftouter incidents on $left.AlertType==$right.RuleId | extend BenignRate=round(100.0*coalesce(Benign,0)/max_of(coalesce(Incidents,0),1),1) | where Alerts>=100 or RepetitionRatio>=20 or BenignRate>=50 | project AlertName,AlertType,Alerts,DistinctEntities,RepetitionRatio,Incidents,Benign,BenignRate,TopEntities

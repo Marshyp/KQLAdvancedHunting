@@ -1,0 +1,4 @@
+// Title: RDP fan-out from one source account or device
+// Severity: High | ATT&CK: T1021.001
+// Data: DeviceLogonEvents | Tune: Allowlist jump hosts and adjust destination threshold.
+DeviceLogonEvents | where Timestamp>ago(1d) and ActionType=="LogonSuccess" and LogonType =~ "RemoteInteractive" | summarize Destinations=dcount(DeviceId),DestinationNames=make_set(DeviceName,50),FirstSeen=min(Timestamp),LastSeen=max(Timestamp),Logons=count() by AccountDomain,AccountName,RemoteIP,bin(Timestamp,15m) | where Destinations>=5 | project Timestamp,AccountDomain,AccountName,RemoteIP,Destinations,Logons,FirstSeen,LastSeen,DestinationNames
