@@ -1,6 +1,19 @@
 // Title: Remote access tool installed and used quickly
-// Severity: High | ATT&CK: T1219
-// Data: DeviceFileEvents, DeviceProcessEvents, DeviceNetworkEvents | Tune: Allowlist sanctioned remote-support tooling.
-let names=dynamic(["anydesk.exe","rustdesk.exe","teamviewer.exe","screenconnect.clientservice.exe","splashtop.exe"]);
-let installs=DeviceFileEvents | where Timestamp>ago(1d) and ActionType=="FileCreated" and FileName in~ (names) | project InstallTime=Timestamp,DeviceId,DeviceName,FileName,FolderPath,SHA1;
-installs | join kind=inner (DeviceProcessEvents | where Timestamp>ago(1d) and FileName in~ (names) | project RunTime=Timestamp,DeviceId,FileName,ProcessCommandLine,AccountName,ProcessId) on DeviceId,FileName | where RunTime between (InstallTime..InstallTime+30m) | join kind=leftouter (DeviceNetworkEvents | where Timestamp>ago(1d) and ActionType=="ConnectionSuccess" | project NetTime=Timestamp,DeviceId,InitiatingProcessId,RemoteUrl,RemoteIP) on DeviceId | where isempty(NetTime) or (InitiatingProcessId==ProcessId and NetTime between (RunTime..RunTime+15m)) | project RunTime,InstallTime,DeviceName,AccountName,FileName,FolderPath,ProcessCommandLine,RemoteUrl,RemoteIP,SHA1
+// Severity: High
+// ATT&CK: T1219
+// Data: DeviceFileEvents, DeviceProcessEvents, DeviceNetworkEvents
+// Tune: Allowlist sanctioned remote-support tooling.
+let names = dynamic(["anydesk.exe","rustdesk.exe","teamviewer.exe","screenconnect.clientservice.exe","splashtop.exe"]);
+let installs = DeviceFileEvents
+| where Timestamp>ago(1d) and ActionType=="FileCreated" and FileName in~ (names)
+| project InstallTime=Timestamp,DeviceId,DeviceName,FileName,FolderPath,SHA1;
+installs
+| join kind=inner (DeviceProcessEvents
+| where Timestamp>ago(1d) and FileName in~ (names)
+| project RunTime=Timestamp,DeviceId,FileName,ProcessCommandLine,AccountName,ProcessId) on DeviceId,FileName
+| where RunTime between (InstallTime..InstallTime+30m)
+| join kind=leftouter (DeviceNetworkEvents
+| where Timestamp>ago(1d) and ActionType=="ConnectionSuccess"
+| project NetTime=Timestamp,DeviceId,InitiatingProcessId,RemoteUrl,RemoteIP) on DeviceId
+| where isempty(NetTime) or (InitiatingProcessId==ProcessId and NetTime between (RunTime..RunTime+15m))
+| project RunTime,InstallTime,DeviceName,AccountName,FileName,FolderPath,ProcessCommandLine,RemoteUrl,RemoteIP,SHA1

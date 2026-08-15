@@ -1,8 +1,28 @@
 // Title: Sequential privilege escalation chain
-// Severity: High | ATT&CK: T1098 Account Manipulation
-// Data: AuditLogs | Tune: Customize group, role, and administrative operation terms.
-let changes=AuditLogs | where TimeGenerated > ago(1d) and Result =~ "success" | mv-expand TargetResources | extend TargetUPN=tostring(TargetResources.userPrincipalName),Actor=tostring(InitiatedBy.user.userPrincipalName) | where isnotempty(TargetUPN) | project TimeGenerated,TargetUPN,Actor,OperationName;
-let groups=changes | where OperationName has "Add member to group" | project GroupTime=TimeGenerated,TargetUPN,GroupActor=Actor;
-let roles=changes | where OperationName has_any ("Add member to role","Add eligible member to role") | project RoleTime=TimeGenerated,TargetUPN,RoleActor=Actor;
-let admin=AuditLogs | where TimeGenerated > ago(1d) and Result =~ "success" | extend TargetUPN=tostring(InitiatedBy.user.userPrincipalName) | where OperationName has_any ("Update conditional access policy","Delete user","Add service principal credentials","Reset user password") | project AdminTime=TimeGenerated,TargetUPN,AdminOperation=OperationName;
-groups | join kind=inner roles on TargetUPN | where RoleTime between (GroupTime..GroupTime+4h) | join kind=inner admin on TargetUPN | where AdminTime between (RoleTime..RoleTime+4h) | project TargetUPN,GroupTime,RoleTime,AdminTime,GroupActor,RoleActor,AdminOperation
+// Severity: High
+// ATT&CK: T1098 Account Manipulation
+// Data: AuditLogs
+// Tune: Customize group, role, and administrative operation terms.
+let changes = AuditLogs
+| where TimeGenerated > ago(1d) and Result =~ "success"
+| mv-expand TargetResources
+| extend TargetUPN=tostring(TargetResources.userPrincipalName),Actor=tostring(InitiatedBy.user.userPrincipalName)
+| where isnotempty(TargetUPN)
+| project TimeGenerated,TargetUPN,Actor,OperationName;
+let groups = changes
+| where OperationName has "Add member to group"
+| project GroupTime=TimeGenerated,TargetUPN,GroupActor=Actor;
+let roles = changes
+| where OperationName has_any ("Add member to role","Add eligible member to role")
+| project RoleTime=TimeGenerated,TargetUPN,RoleActor=Actor;
+let admin = AuditLogs
+| where TimeGenerated > ago(1d) and Result =~ "success"
+| extend TargetUPN=tostring(InitiatedBy.user.userPrincipalName)
+| where OperationName has_any ("Update conditional access policy","Delete user","Add service principal credentials","Reset user password")
+| project AdminTime=TimeGenerated,TargetUPN,AdminOperation=OperationName;
+groups
+| join kind=inner roles on TargetUPN
+| where RoleTime between (GroupTime..GroupTime+4h)
+| join kind=inner admin on TargetUPN
+| where AdminTime between (RoleTime..RoleTime+4h)
+| project TargetUPN,GroupTime,RoleTime,AdminTime,GroupActor,RoleActor,AdminOperation

@@ -1,5 +1,6 @@
 // Title: Scheduled task created with encoded or hidden PowerShell
-// Severity: High | ATT&CK: T1053.005 Scheduled Task/Job: Scheduled Task
+// Severity: High
+// ATT&CK: T1053.005 Scheduled Task/Job: Scheduled Task
 // Data: DeviceProcessEvents
 // Tune: Allowlist known deployment tooling by signer, parent, and exact task name.
 DeviceProcessEvents

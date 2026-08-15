@@ -1,4 +1,13 @@
 // Title: EDR blind spot creation
-// Severity: High | ATT&CK: T1562.001
-// Data: DeviceProcessEvents, DeviceRegistryEvents, DeviceEvents | Tune: Exclude approved sensor upgrades and incident containment workflows.
-union (DeviceProcessEvents | where Timestamp>ago(1d) and ((FileName in~ ("sc.exe","net.exe","net1.exe") and ProcessCommandLine has_any ("sense","mdatp","defender","stop","delete")) or ProcessCommandLine has_any ("uninstall","tamperprotection","DisableRealtimeMonitoring","netsh advfirewall set allprofiles state off")) | project Timestamp,DeviceName,Account=AccountName,Indicator="Process tampering",Evidence=ProcessCommandLine,Process=FileName),(DeviceRegistryEvents | where Timestamp>ago(1d) and RegistryKey has_any ("Windows Advanced Threat Protection","Windows Defender") and RegistryValueData in~ ("0","1","disabled") | project Timestamp,DeviceName,Account=InitiatingProcessAccountName,Indicator="Policy tampering",Evidence=strcat(RegistryKey,"=",RegistryValueData),Process=InitiatingProcessFileName),(DeviceEvents | where Timestamp>ago(1d) and ActionType has_any ("Tampering","Sensor","AntivirusDisabled") | project Timestamp,DeviceName,Account=InitiatingProcessAccountName,Indicator=ActionType,Evidence=tostring(AdditionalFields),Process=InitiatingProcessFileName) | order by Timestamp desc
+// Severity: High
+// ATT&CK: T1562.001
+// Data: DeviceProcessEvents, DeviceRegistryEvents, DeviceEvents
+// Tune: Exclude approved sensor upgrades and incident containment workflows.
+union (DeviceProcessEvents
+| where Timestamp>ago(1d) and ((FileName in~ ("sc.exe","net.exe","net1.exe") and ProcessCommandLine has_any ("sense","mdatp","defender","stop","delete")) or ProcessCommandLine has_any ("uninstall","tamperprotection","DisableRealtimeMonitoring","netsh advfirewall set allprofiles state off"))
+| project Timestamp,DeviceName,Account=AccountName,Indicator="Process tampering",Evidence=ProcessCommandLine,Process=FileName),(DeviceRegistryEvents
+| where Timestamp>ago(1d) and RegistryKey has_any ("Windows Advanced Threat Protection","Windows Defender") and RegistryValueData in~ ("0","1","disabled")
+| project Timestamp,DeviceName,Account=InitiatingProcessAccountName,Indicator="Policy tampering",Evidence=strcat(RegistryKey,"=",RegistryValueData),Process=InitiatingProcessFileName),(DeviceEvents
+| where Timestamp>ago(1d) and ActionType has_any ("Tampering","Sensor","AntivirusDisabled")
+| project Timestamp,DeviceName,Account=InitiatingProcessAccountName,Indicator=ActionType,Evidence=tostring(AdditionalFields),Process=InitiatingProcessFileName)
+| order by Timestamp desc

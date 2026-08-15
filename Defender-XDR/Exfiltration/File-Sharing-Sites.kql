@@ -1,5 +1,6 @@
 // Title: High-volume upload to public file-sharing services
-// Severity: Medium | ATT&CK: T1567.002 Exfiltration to Cloud Storage
+// Severity: Medium
+// ATT&CK: T1567.002 Exfiltration to Cloud Storage
 // Data: DeviceNetworkEvents (Defender for Endpoint)
 // Tune: Maintain an organizational allowlist and adjust the connection threshold for browser-heavy environments.
 let fileSharingDomains = dynamic(["mega.nz", "dropbox.com", "drive.google.com", "wetransfer.com", "transfer.sh", "file.io", "sendspace.com", "gofile.io", "anonfiles.com"]);

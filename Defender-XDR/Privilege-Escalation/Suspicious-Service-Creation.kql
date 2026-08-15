@@ -1,5 +1,6 @@
 // Title: Service creation from a user-writable or remote path
-// Severity: High | ATT&CK: T1543.003 Windows Service
+// Severity: High
+// ATT&CK: T1543.003 Windows Service
 // Data: DeviceProcessEvents
 // Tune: Add exact paths used by approved software deployment products.
 DeviceProcessEvents

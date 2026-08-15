@@ -1,5 +1,14 @@
 // Title: NTDS SAM and SYSTEM collection behaviour
-// Severity: High | ATT&CK: T1003.002, T1003.003
-// Data: DeviceProcessEvents, DeviceFileEvents | Tune: Exclude domain-controller backup software by signer/hash.
-let prep=DeviceProcessEvents | where Timestamp>ago(1d) and ((FileName in~ ("vssadmin.exe","wmic.exe") and ProcessCommandLine has "shadowcopy") or (FileName in~ ("ntdsutil.exe","esentutl.exe") and ProcessCommandLine has_any ("ifm","ntds.dit","/y")) or (FileName =~ "reg.exe" and ProcessCommandLine has_all ("save") and ProcessCommandLine has_any ("hklm\\sam","hklm\\system","hklm\\security"))) | project PrepTime=Timestamp,DeviceId,DeviceName,AccountName,PrepCommand=ProcessCommandLine;
-prep | join kind=leftouter (DeviceFileEvents | where Timestamp>ago(1d) and (FileName in~ ("ntds.dit","sam","system","security") or FolderPath has_any ("\\Windows\\NTDS\\","\\System32\\config\\")) | project FileTime=Timestamp,DeviceId,FileName,FolderPath,ActionType) on DeviceId | where isempty(FileTime) or FileTime between (PrepTime-15m..PrepTime+60m) | project PrepTime,FileTime,DeviceName,AccountName,PrepCommand,FileName,FolderPath,ActionType
+// Severity: High
+// ATT&CK: T1003.002, T1003.003
+// Data: DeviceProcessEvents, DeviceFileEvents
+// Tune: Exclude domain-controller backup software by signer/hash.
+let prep = DeviceProcessEvents
+| where Timestamp>ago(1d) and ((FileName in~ ("vssadmin.exe","wmic.exe") and ProcessCommandLine has "shadowcopy") or (FileName in~ ("ntdsutil.exe","esentutl.exe") and ProcessCommandLine has_any ("ifm","ntds.dit","/y")) or (FileName =~ "reg.exe" and ProcessCommandLine has_all ("save") and ProcessCommandLine has_any ("hklm\\sam","hklm\\system","hklm\\security")))
+| project PrepTime=Timestamp,DeviceId,DeviceName,AccountName,PrepCommand=ProcessCommandLine;
+prep
+| join kind=leftouter (DeviceFileEvents
+| where Timestamp>ago(1d) and (FileName in~ ("ntds.dit","sam","system","security") or FolderPath has_any ("\\Windows\\NTDS\\","\\System32\\config\\"))
+| project FileTime=Timestamp,DeviceId,FileName,FolderPath,ActionType) on DeviceId
+| where isempty(FileTime) or FileTime between (PrepTime-15m..PrepTime+60m)
+| project PrepTime,FileTime,DeviceName,AccountName,PrepCommand,FileName,FolderPath,ActionType

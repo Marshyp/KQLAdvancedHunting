@@ -1,5 +1,6 @@
 // Title: Microsoft Defender protection or exclusion change
-// Severity: High | ATT&CK: T1562.001 Impair Defenses
+// Severity: High
+// ATT&CK: T1562.001 Impair Defenses
 // Data: DeviceProcessEvents
 // Tune: Allowlist approved security-management tooling and maintenance accounts.
 let tools = dynamic(["powershell.exe","pwsh.exe","mpcmdrun.exe","reg.exe","cmd.exe"]);

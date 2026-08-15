@@ -1,6 +1,14 @@
 // Title: First-seen administrative or remote tool per device
-// Severity: Medium | ATT&CK: T1018, T1219
-// Data: DeviceProcessEvents | Tune: Extend ApprovedRemoteTools watchlist logic when deployed in Sentinel.
-let tools=dynamic(["psexec.exe","rclone.exe","winscp.exe","putty.exe","anydesk.exe","screenconnect.clientservice.exe","rustdesk.exe","advanced_ip_scanner.exe","adexplorer.exe","sharphound.exe","bloodhound.exe"]);
-let baseline=DeviceProcessEvents | where Timestamp between (ago(30d)..ago(1d)) and FileName in~ (tools) | summarize by DeviceId,FileName=tolower(FileName);
-DeviceProcessEvents | where Timestamp>ago(1d) and FileName in~ (tools) | extend Normalized=tolower(FileName) | join kind=leftanti baseline on DeviceId,$left.Normalized==$right.FileName | project Timestamp,DeviceName,AccountName,FileName,ProcessCommandLine,InitiatingProcessFileName,SHA1,Signer=ProcessVersionInfoCompanyName
+// Severity: Medium
+// ATT&CK: T1018, T1219
+// Data: DeviceProcessEvents
+// Tune: Extend ApprovedRemoteTools watchlist logic when deployed in Sentinel.
+let tools = dynamic(["psexec.exe","rclone.exe","winscp.exe","putty.exe","anydesk.exe","screenconnect.clientservice.exe","rustdesk.exe","advanced_ip_scanner.exe","adexplorer.exe","sharphound.exe","bloodhound.exe"]);
+let baseline = DeviceProcessEvents
+| where Timestamp between (ago(30d)..ago(1d)) and FileName in~ (tools)
+| summarize by DeviceId,FileName=tolower(FileName);
+DeviceProcessEvents
+| where Timestamp>ago(1d) and FileName in~ (tools)
+| extend Normalized=tolower(FileName)
+| join kind=leftanti baseline on DeviceId,$left.Normalized==$right.FileName
+| project Timestamp,DeviceName,AccountName,FileName,ProcessCommandLine,InitiatingProcessFileName,SHA1,Signer=ProcessVersionInfoCompanyName

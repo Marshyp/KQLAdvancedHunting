@@ -1,4 +1,11 @@
 // Title: PowerShell downgrade or logging evasion
-// Severity: High | ATT&CK: T1562.001
-// Data: DeviceProcessEvents, DeviceRegistryEvents | Tune: Exclude legacy applications only after owner validation.
-union (DeviceProcessEvents | where Timestamp>ago(1d) and FileName in~ ("powershell.exe","pwsh.exe") and ProcessCommandLine has_any ("-version 2","-v 2","ScriptBlockLogging","ModuleLogging","Transcription") | project Timestamp,DeviceName,Account=AccountName,Indicator="Process",Artifact=ProcessCommandLine,Process=FileName),(DeviceRegistryEvents | where Timestamp>ago(1d) and RegistryKey has_any ("PowerShell\\ScriptBlockLogging","PowerShell\\ModuleLogging","PowerShell\\Transcription") and RegistryValueData in~ ("0","false") | project Timestamp,DeviceName,Account=InitiatingProcessAccountName,Indicator="Registry",Artifact=strcat(RegistryKey,"=",RegistryValueData),Process=InitiatingProcessFileName) | order by Timestamp desc
+// Severity: High
+// ATT&CK: T1562.001
+// Data: DeviceProcessEvents, DeviceRegistryEvents
+// Tune: Exclude legacy applications only after owner validation.
+union (DeviceProcessEvents
+| where Timestamp>ago(1d) and FileName in~ ("powershell.exe","pwsh.exe") and ProcessCommandLine has_any ("-version 2","-v 2","ScriptBlockLogging","ModuleLogging","Transcription")
+| project Timestamp,DeviceName,Account=AccountName,Indicator="Process",Artifact=ProcessCommandLine,Process=FileName),(DeviceRegistryEvents
+| where Timestamp>ago(1d) and RegistryKey has_any ("PowerShell\\ScriptBlockLogging","PowerShell\\ModuleLogging","PowerShell\\Transcription") and RegistryValueData in~ ("0","false")
+| project Timestamp,DeviceName,Account=InitiatingProcessAccountName,Indicator="Registry",Artifact=strcat(RegistryKey,"=",RegistryValueData),Process=InitiatingProcessFileName)
+| order by Timestamp desc

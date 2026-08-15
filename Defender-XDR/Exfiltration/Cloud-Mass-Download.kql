@@ -1,5 +1,6 @@
 // Title: Mass download from a cloud application by one account
-// Severity: High | ATT&CK: T1530 Data from Cloud Storage
+// Severity: High
+// ATT&CK: T1530 Data from Cloud Storage
 // Data: CloudAppEvents (Defender for Cloud Apps)
 // Tune: Adjust thresholds for backup, eDiscovery, migration, and sanctioned synchronization accounts.
 let thresholdEvents = 100;

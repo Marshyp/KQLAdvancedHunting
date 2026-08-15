@@ -1,5 +1,6 @@
 // Title: Suspicious Run key or Startup folder persistence
-// Severity: High | ATT&CK: T1060 Registry Run Keys / Startup Folder
+// Severity: High
+// ATT&CK: T1060 Registry Run Keys / Startup Folder
 // Data: DeviceRegistryEvents, DeviceFileEvents (Defender for Endpoint)
 // Tune: Allowlist approved application installers and managed logon agents by signer, hash, and exact value data.
 let registryPersistence = DeviceRegistryEvents

@@ -1,5 +1,15 @@
 // Title: Mass file collection before USB activity
-// Severity: High | ATT&CK: T1074.001, T1052.001
-// Data: DeviceFileEvents, DeviceEvents | Tune: Adjust file count and extension set for engineering workloads.
-let collection=DeviceFileEvents | where Timestamp>ago(1d) and ActionType in~ ("FileCreated","FileCopied","FileRenamed") and FileName matches regex @"(?i)\.(docx?|xlsx?|pptx?|pdf|csv|zip|7z)$" | summarize Files=count(),Bytes=sum(FileSize),Folders=dcount(FolderPath),Sample=make_set(FolderPath,20) by DeviceId,DeviceName,Account=InitiatingProcessAccountName,bin(Timestamp,30m) | where Files>=100 or Bytes>=500000000;
-collection | join kind=inner (DeviceEvents | where Timestamp>ago(1d) and ActionType has "UsbDriveMount" | project USBTime=Timestamp,DeviceId,USBDetails=AdditionalFields) on DeviceId | where USBTime between (Timestamp..Timestamp+60m) | project USBTime,CollectionStart=Timestamp,DeviceName,Account,Files,Bytes,Folders,Sample,USBDetails
+// Severity: High
+// ATT&CK: T1074.001, T1052.001
+// Data: DeviceFileEvents, DeviceEvents
+// Tune: Adjust file count and extension set for engineering workloads.
+let collection = DeviceFileEvents
+| where Timestamp>ago(1d) and ActionType in~ ("FileCreated","FileCopied","FileRenamed") and FileName matches regex @"(?i)\.(docx?|xlsx?|pptx?|pdf|csv|zip|7z)$"
+| summarize Files=count(),Bytes=sum(FileSize),Folders=dcount(FolderPath),Sample=make_set(FolderPath,20) by DeviceId,DeviceName,Account=InitiatingProcessAccountName,bin(Timestamp,30m)
+| where Files>=100 or Bytes>=500000000;
+collection
+| join kind=inner (DeviceEvents
+| where Timestamp>ago(1d) and ActionType has "UsbDriveMount"
+| project USBTime=Timestamp,DeviceId,USBDetails=AdditionalFields) on DeviceId
+| where USBTime between (Timestamp..Timestamp+60m)
+| project USBTime,CollectionStart=Timestamp,DeviceName,Account,Files,Bytes,Folders,Sample,USBDetails

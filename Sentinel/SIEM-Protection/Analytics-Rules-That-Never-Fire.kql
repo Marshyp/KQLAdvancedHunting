@@ -1,3 +1,11 @@
 // Title: Enabled analytics rules that never fire
-// Severity: Medium | Data: _SentinelHealth() | Tune: Requires Sentinel health monitoring; change evaluation period to 30d or 60d as needed.
-_SentinelHealth() | where TimeGenerated>ago(90d) and SentinelResourceType =~ "Analytics rule" and OperationName has "rule run" | extend EP=todynamic(ExtendedProperties),Alerts=toint(EP.AlertsGeneratedAmount),Results=toint(EP.QueryResultAmount) | summarize Runs=count(),SuccessfulRuns=countif(Status =~ "Success"),AlertsGenerated=sum(Alerts),QueryResults=sum(Results),LastRun=max(TimeGenerated),LastStatus=arg_max(TimeGenerated,Status) by SentinelResourceId,SentinelResourceName,SentinelResourceKind | where SuccessfulRuns>0 and AlertsGenerated==0 | extend Assessment=iff(QueryResults>0,"Quiet or threshold too high","Potentially broken or no matching telemetry") | project SentinelResourceName,SentinelResourceKind,Runs,SuccessfulRuns,AlertsGenerated,QueryResults,LastRun,Assessment,SentinelResourceId
+// Severity: Medium
+// Data: _SentinelHealth()
+// Tune: Requires Sentinel health monitoring; change evaluation period to 30d or 60d as needed.
+_SentinelHealth()
+| where TimeGenerated>ago(90d) and SentinelResourceType =~ "Analytics rule" and OperationName has "rule run"
+| extend EP=todynamic(ExtendedProperties),Alerts=toint(EP.AlertsGeneratedAmount),Results=toint(EP.QueryResultAmount)
+| summarize Runs=count(),SuccessfulRuns=countif(Status =~ "Success"),AlertsGenerated=sum(Alerts),QueryResults=sum(Results),LastRun=max(TimeGenerated),LastStatus=arg_max(TimeGenerated,Status) by SentinelResourceId,SentinelResourceName,SentinelResourceKind
+| where SuccessfulRuns>0 and AlertsGenerated==0
+| extend Assessment=iff(QueryResults>0,"Quiet or threshold too high","Potentially broken or no matching telemetry")
+| project SentinelResourceName,SentinelResourceKind,Runs,SuccessfulRuns,AlertsGenerated,QueryResults,LastRun,Assessment,SentinelResourceId

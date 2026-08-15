@@ -1,7 +1,24 @@
 // Title: Break-glass account health pack
-// Severity: High | ATT&CK: T1078.004 Cloud Accounts
-// Data: SigninLogs, AuditLogs, BreakGlassAccounts watchlist | Tune: Import and enable real emergency accounts.
-let bg=_GetWatchlist('BreakGlassAccounts') | where tobool(Enabled) | project UPN=tolower(UserPrincipalName);
-let signins=SigninLogs | where TimeGenerated>ago(1d) and ResultType==0 | extend UPN=tolower(UserPrincipalName) | join kind=inner bg on UPN | project TimeGenerated,UPN,EventType="Sign-in",Operation=AppDisplayName,Actor=UPN,IPAddress;
-let audits=AuditLogs | where TimeGenerated>ago(1d) | extend Actor=tostring(InitiatedBy.user.userPrincipalName),ActorIP=tostring(InitiatedBy.user.ipAddress) | mv-expand TargetResources | extend UPN=tolower(tostring(TargetResources.userPrincipalName)) | join kind=inner bg on UPN | where OperationName has_any ("password","authentication method","security info","member to group","member to role","Disable account","Delete user","conditional access") | extend EventType=case(OperationName has "password","Password reset",OperationName has_any ("authentication method","security info"),"Authentication method change",OperationName has "group","Group membership change",OperationName has "role","Role modification",OperationName has "Disable","Disablement",OperationName has "Delete","Deletion","Conditional Access inclusion") | project TimeGenerated,UPN,EventType,Operation=OperationName,Actor,IPAddress=ActorIP;
-union signins,audits | order by TimeGenerated desc
+// Severity: High
+// ATT&CK: T1078.004 Cloud Accounts
+// Data: SigninLogs, AuditLogs, BreakGlassAccounts watchlist
+// Tune: Import and enable real emergency accounts.
+let bg = _GetWatchlist('BreakGlassAccounts')
+| where tobool(Enabled)
+| project UPN=tolower(UserPrincipalName);
+let signins = SigninLogs
+| where TimeGenerated>ago(1d) and ResultType==0
+| extend UPN=tolower(UserPrincipalName)
+| join kind=inner bg on UPN
+| project TimeGenerated,UPN,EventType="Sign-in",Operation=AppDisplayName,Actor=UPN,IPAddress;
+let audits = AuditLogs
+| where TimeGenerated>ago(1d)
+| extend Actor=tostring(InitiatedBy.user.userPrincipalName),ActorIP=tostring(InitiatedBy.user.ipAddress)
+| mv-expand TargetResources
+| extend UPN=tolower(tostring(TargetResources.userPrincipalName))
+| join kind=inner bg on UPN
+| where OperationName has_any ("password","authentication method","security info","member to group","member to role","Disable account","Delete user","conditional access")
+| extend EventType=case(OperationName has "password","Password reset",OperationName has_any ("authentication method","security info"),"Authentication method change",OperationName has "group","Group membership change",OperationName has "role","Role modification",OperationName has "Disable","Disablement",OperationName has "Delete","Deletion","Conditional Access inclusion")
+| project TimeGenerated,UPN,EventType,Operation=OperationName,Actor,IPAddress=ActorIP;
+union signins,audits
+| order by TimeGenerated desc

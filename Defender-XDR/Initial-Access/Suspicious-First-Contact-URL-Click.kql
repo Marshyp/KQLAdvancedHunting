@@ -1,5 +1,6 @@
 // Title: First-contact email followed by an allowed URL click
-// Severity: Medium | ATT&CK: T1566.002 Phishing: Spearphishing Link
+// Severity: Medium
+// ATT&CK: T1566.002 Phishing: Spearphishing Link
 // Data: EmailEvents, UrlClickEvents (Defender for Office 365)
 // Description: Finds first-contact inbound mail followed by a user click that was not blocked.
 // Tune: Allowlist trusted bulk senders and sanctioned marketing domains.
@@ -11,9 +12,12 @@ let suspiciousMail = EmailEvents
 | project MailTime=Timestamp, NetworkMessageId, RecipientEmailAddress, SenderFromAddress, SenderFromDomain, Subject, ThreatTypes;
 suspiciousMail
 | join kind=inner (UrlClickEvents
-    | where Timestamp > ago(lookback)
-    | where ActionType !in~ ("ClickBlocked", "UrlErrorPage")
-    | project ClickTime=Timestamp, NetworkMessageId, AccountUpn, Url, ClickAction=ActionType, IsClickedThrough) on NetworkMessageId
+
+| where Timestamp > ago(lookback)
+
+| where ActionType !in~ ("ClickBlocked", "UrlErrorPage")
+
+| project ClickTime=Timestamp, NetworkMessageId, AccountUpn, Url, ClickAction=ActionType, IsClickedThrough) on NetworkMessageId
 | where ClickTime between (MailTime .. MailTime + 24h)
 | project ClickTime, RecipientEmailAddress, AccountUpn, SenderFromAddress, SenderFromDomain, Subject, Url, ClickAction, IsClickedThrough, ThreatTypes, NetworkMessageId
 | order by ClickTime desc

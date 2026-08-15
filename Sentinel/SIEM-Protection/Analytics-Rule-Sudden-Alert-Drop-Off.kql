@@ -1,5 +1,15 @@
 // Title: Analytics rule sudden alert drop-off
-// Severity: Medium | Data: SecurityAlert | Tune: Adjust baseline and minimum historical alert volume.
-let recent=SecurityAlert | where TimeGenerated>ago(7d) | summarize RecentAlerts=count() by AlertName,AlertType;
-let historical=SecurityAlert | where TimeGenerated between (ago(35d)..ago(7d)) | summarize HistoricalAlerts=count(),BaselinePerWeek=count()/4.0 by AlertName,AlertType;
-historical | join kind=leftouter recent on AlertName,AlertType | extend RecentAlerts=coalesce(RecentAlerts,0),DropPercent=round(100.0*(BaselinePerWeek-RecentAlerts)/BaselinePerWeek,1) | where HistoricalAlerts>=20 and RecentAlerts<BaselinePerWeek*0.25 | project AlertName,AlertType,HistoricalAlerts,BaselinePerWeek,RecentAlerts,DropPercent
+// Severity: Medium
+// Data: SecurityAlert
+// Tune: Adjust baseline and minimum historical alert volume.
+let recent = SecurityAlert
+| where TimeGenerated>ago(7d)
+| summarize RecentAlerts=count() by AlertName,AlertType;
+let historical = SecurityAlert
+| where TimeGenerated between (ago(35d)..ago(7d))
+| summarize HistoricalAlerts=count(),BaselinePerWeek=count()/4.0 by AlertName,AlertType;
+historical
+| join kind=leftouter recent on AlertName,AlertType
+| extend RecentAlerts=coalesce(RecentAlerts,0),DropPercent=round(100.0*(BaselinePerWeek-RecentAlerts)/BaselinePerWeek,1)
+| where HistoricalAlerts>=20 and RecentAlerts<BaselinePerWeek*0.25
+| project AlertName,AlertType,HistoricalAlerts,BaselinePerWeek,RecentAlerts,DropPercent

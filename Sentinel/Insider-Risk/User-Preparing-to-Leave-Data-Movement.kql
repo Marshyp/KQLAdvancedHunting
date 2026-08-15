@@ -1,10 +1,29 @@
 // Title: User preparing to leave data movement scoring
-// Severity: High | ATT&CK: T1530, T1560.001, T1567.002, T1052.001
+// Severity: High
+// ATT&CK: T1530, T1560.001, T1567.002, T1052.001
 // Data: HighRiskUsers watchlist, CloudAppEvents, DeviceFileEvents, DeviceEvents, DeviceNetworkEvents
 // Tune: Mark leavers in RiskReason and tune score weights against normal role behaviour.
-let leavers=_GetWatchlist('HighRiskUsers') | where tobool(Enabled) and RiskReason has_any ("leave","leaver","departure","termination") | project Account=tolower(UserPrincipalName),RiskReason,ReviewOwner;
-let downloads=CloudAppEvents | where Timestamp>ago(7d) and ActionType has "Download" | summarize BulkDownloads=count(),DownloadedObjects=dcount(ObjectId) by Account=tolower(AccountId),Day=bin(Timestamp,1d);
-let shares=CloudAppEvents | where Timestamp>ago(7d) and ActionType has "Share" and tostring(RawEventData) has_any ("anonymous","external","Anyone") | summarize ExternalShares=count() by Account=tolower(AccountId),Day=bin(Timestamp,1d);
-let archives=DeviceFileEvents | where Timestamp>ago(7d) and FileName matches regex @"(?i)\.(zip|7z|rar)$" | summarize Archives=count(),ArchiveBytes=sum(FileSize) by Account=tolower(InitiatingProcessAccountUpn),Day=bin(Timestamp,1d);
-let channels=union (DeviceEvents | where Timestamp>ago(7d) and ActionType has "UsbDriveMount" | project Account=tolower(InitiatingProcessAccountUpn),Day=bin(Timestamp,1d),USB=1,PersonalCloud=0),(DeviceNetworkEvents | where Timestamp>ago(7d) and RemoteUrl has_any ("mega.nz","dropbox.com","wetransfer.com","file.io") | project Account=tolower(InitiatingProcessAccountUpn),Day=bin(Timestamp,1d),USB=0,PersonalCloud=1) | summarize USB=sum(USB),PersonalCloud=sum(PersonalCloud) by Account,Day;
-leavers | join kind=inner (union downloads,shares,archives,channels | summarize BulkDownloads=sum(BulkDownloads),DownloadedObjects=sum(DownloadedObjects),ExternalShares=sum(ExternalShares),Archives=sum(Archives),ArchiveBytes=sum(ArchiveBytes),USB=sum(USB),PersonalCloud=sum(PersonalCloud) by Account,Day) on Account | extend Score=iff(BulkDownloads>=100 or DownloadedObjects>=75,30,0)+iff(ExternalShares>0,20,0)+iff(PersonalCloud>=5,20,0)+iff(USB>0,15,0)+iff(ArchiveBytes>=100000000,20,0) | where Score>=40 | project Day,Account,RiskReason,ReviewOwner,Score,BulkDownloads,DownloadedObjects,ExternalShares,PersonalCloud,USB,Archives,ArchiveBytes
+let leavers = _GetWatchlist('HighRiskUsers')
+| where tobool(Enabled) and RiskReason has_any ("leave","leaver","departure","termination")
+| project Account=tolower(UserPrincipalName),RiskReason,ReviewOwner;
+let downloads = CloudAppEvents
+| where Timestamp>ago(7d) and ActionType has "Download"
+| summarize BulkDownloads=count(),DownloadedObjects=dcount(ObjectId) by Account=tolower(AccountId),Day=bin(Timestamp,1d);
+let shares = CloudAppEvents
+| where Timestamp>ago(7d) and ActionType has "Share" and tostring(RawEventData) has_any ("anonymous","external","Anyone")
+| summarize ExternalShares=count() by Account=tolower(AccountId),Day=bin(Timestamp,1d);
+let archives = DeviceFileEvents
+| where Timestamp>ago(7d) and FileName matches regex @"(?i)\.(zip|7z|rar)$"
+| summarize Archives=count(),ArchiveBytes=sum(FileSize) by Account=tolower(InitiatingProcessAccountUpn),Day=bin(Timestamp,1d);
+let channels = union (DeviceEvents
+| where Timestamp>ago(7d) and ActionType has "UsbDriveMount"
+| project Account=tolower(InitiatingProcessAccountUpn),Day=bin(Timestamp,1d),USB=1,PersonalCloud=0),(DeviceNetworkEvents
+| where Timestamp>ago(7d) and RemoteUrl has_any ("mega.nz","dropbox.com","wetransfer.com","file.io")
+| project Account=tolower(InitiatingProcessAccountUpn),Day=bin(Timestamp,1d),USB=0,PersonalCloud=1)
+| summarize USB=sum(USB),PersonalCloud=sum(PersonalCloud) by Account,Day;
+leavers
+| join kind=inner (union downloads,shares,archives,channels
+| summarize BulkDownloads=sum(BulkDownloads),DownloadedObjects=sum(DownloadedObjects),ExternalShares=sum(ExternalShares),Archives=sum(Archives),ArchiveBytes=sum(ArchiveBytes),USB=sum(USB),PersonalCloud=sum(PersonalCloud) by Account,Day) on Account
+| extend Score=iff(BulkDownloads>=100 or DownloadedObjects>=75,30,0)+iff(ExternalShares>0,20,0)+iff(PersonalCloud>=5,20,0)+iff(USB>0,15,0)+iff(ArchiveBytes>=100000000,20,0)
+| where Score>=40
+| project Day,Account,RiskReason,ReviewOwner,Score,BulkDownloads,DownloadedObjects,ExternalShares,PersonalCloud,USB,Archives,ArchiveBytes

@@ -1,5 +1,6 @@
 // Title: SMB fan-out followed by remote execution tooling
-// Severity: High | ATT&CK: T1021.002 SMB/Windows Admin Shares, T1569.002 Service Execution
+// Severity: High
+// ATT&CK: T1021.002 SMB/Windows Admin Shares, T1569.002 Service Execution
 // Data: DeviceNetworkEvents, DeviceProcessEvents
 // Tune: Allowlist deployment servers, scanners, backup servers, and domain controllers.
 let scanners = DeviceNetworkEvents
@@ -8,9 +9,13 @@ let scanners = DeviceNetworkEvents
 | where Targets >= 10;
 scanners
 | join kind=inner (DeviceProcessEvents
-    | where Timestamp > ago(1d)
-    | where FileName in~ ("psexec.exe","paexec.exe","wmic.exe","sc.exe","powershell.exe")
-    | where ProcessCommandLine has_any ("psexec", "/node:", "create", "Invoke-Command", "Enter-PSSession")
-    | project ProcessTime=Timestamp, DeviceId, FileName, ProcessCommandLine, AccountName) on DeviceId
+
+| where Timestamp > ago(1d)
+
+| where FileName in~ ("psexec.exe","paexec.exe","wmic.exe","sc.exe","powershell.exe")
+
+| where ProcessCommandLine has_any ("psexec", "/node:", "create", "Invoke-Command", "Enter-PSSession")
+
+| project ProcessTime=Timestamp, DeviceId, FileName, ProcessCommandLine, AccountName) on DeviceId
 | where ProcessTime between (FirstSeen - 5m .. LastSeen + 15m)
 | project ProcessTime, DeviceName, AccountName, Targets, RemoteIPs, FileName, ProcessCommandLine, FirstSeen, LastSeen

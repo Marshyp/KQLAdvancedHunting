@@ -1,5 +1,6 @@
 // Title: Suspicious DNS-over-HTTPS or DNS tunneling utility execution
-// Severity: Medium | ATT&CK: T1071.004 DNS
+// Severity: Medium
+// ATT&CK: T1071.004 DNS
 // Data: DeviceProcessEvents
 // Tune: Allowlist approved privacy clients, browsers, and network diagnostics.
 let tools = dynamic(["dns2tcp","dnscat","iodine","dnscrypt-proxy","cloudflared","doh-client"]);

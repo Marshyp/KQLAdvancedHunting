@@ -1,5 +1,14 @@
 // Title: Broken detection dependency monitor
-// Severity: High | Data: configured rule/table mapping plus workspace tables | Tune: Replace examples with production rule dependencies.
-let dependencies=datatable(RuleName:string,TableName:string,MaximumSilence:timespan)["Password spray across Entra accounts","SigninLogs",2h,"Windows security event log cleared","SecurityEvent",2h,"Role assignment followed by privileged operation","AzureActivity",2h];
-let freshness=union withsource=TableName * | where TimeGenerated>ago(7d) | summarize LastEvent=max(TimeGenerated) by TableName;
-dependencies | join kind=leftouter freshness on TableName | extend Silence=now()-LastEvent | where isempty(LastEvent) or Silence>MaximumSilence | extend Status=iff(isempty(LastEvent),"No telemetry in seven days","Telemetry stale") | project RuleName,TableName,MaximumSilence,LastEvent,Silence,Status
+// Severity: High
+// Data: configured rule/table mapping plus workspace tables
+// Tune: Replace examples with production rule dependencies.
+let dependencies = datatable(RuleName:string,TableName:string,MaximumSilence:timespan)["Password spray across Entra accounts","SigninLogs",2h,"Windows security event log cleared","SecurityEvent",2h,"Role assignment followed by privileged operation","AzureActivity",2h];
+let freshness = union withsource=TableName *
+| where TimeGenerated>ago(7d)
+| summarize LastEvent=max(TimeGenerated) by TableName;
+dependencies
+| join kind=leftouter freshness on TableName
+| extend Silence=now()-LastEvent
+| where isempty(LastEvent) or Silence>MaximumSilence
+| extend Status=iff(isempty(LastEvent),"No telemetry in seven days","Telemetry stale")
+| project RuleName,TableName,MaximumSilence,LastEvent,Silence,Status

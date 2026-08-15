@@ -1,5 +1,6 @@
 // Title: LOLBin download-to-execution chain
-// Severity: High | ATT&CK: T1059 Command and Scripting Interpreter, T1105 Ingress Tool Transfer
+// Severity: High
+// ATT&CK: T1059 Command and Scripting Interpreter, T1105 Ingress Tool Transfer
 // Data: DeviceNetworkEvents, DeviceProcessEvents (Defender for Endpoint)
 // Description: Correlates outbound network activity by a script utility with a child process shortly afterward.
 // Tune: Allowlist software-management parents and known internal hosts.
@@ -12,8 +13,10 @@ let network = DeviceNetworkEvents
 | project NetTime=Timestamp, DeviceId, DeviceName, InitiatingProcessId, InitiatingProcessFileName, InitiatingProcessCommandLine, RemoteUrl, RemoteIP, RemotePort;
 network
 | join kind=inner (DeviceProcessEvents
-    | where Timestamp > ago(1d)
-    | project ProcessTime=Timestamp, DeviceId, InitiatingProcessId, ChildFileName=FileName, ChildCommandLine=ProcessCommandLine, AccountName, SHA1) on DeviceId, InitiatingProcessId
+
+| where Timestamp > ago(1d)
+
+| project ProcessTime=Timestamp, DeviceId, InitiatingProcessId, ChildFileName=FileName, ChildCommandLine=ProcessCommandLine, AccountName, SHA1) on DeviceId, InitiatingProcessId
 | where ProcessTime between (NetTime .. NetTime + window)
 | where ChildFileName !in~ (downloaders)
 | project ProcessTime, DeviceName, AccountName, InitiatingProcessFileName, InitiatingProcessCommandLine, RemoteUrl, RemoteIP, RemotePort, ChildFileName, ChildCommandLine, SHA1

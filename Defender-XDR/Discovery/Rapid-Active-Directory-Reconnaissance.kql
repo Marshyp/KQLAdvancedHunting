@@ -1,5 +1,6 @@
 // Title: Rapid Active Directory reconnaissance across object types
-// Severity: Medium | ATT&CK: T1087 Account Discovery, T1069 Permission Groups Discovery, T1018 Remote System Discovery
+// Severity: Medium
+// ATT&CK: T1087 Account Discovery, T1069 Permission Groups Discovery, T1018 Remote System Discovery
 // Data: IdentityQueryEvents (Defender for Identity)
 // Description: Identifies an account querying many AD object types and targets in a short window.
 // Tune: Allowlist identity governance, inventory, and vulnerability-management service accounts.

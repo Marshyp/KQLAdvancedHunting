@@ -1,5 +1,6 @@
 // Title: Periodic beaconing to a rare remote domain
-// Severity: Medium | ATT&CK: T1071.001 Web Protocols
+// Severity: Medium
+// ATT&CK: T1071.001 Web Protocols
 // Data: DeviceNetworkEvents
 // Description: Finds repeated connections with low timing variance to domains seen on few devices.
 // Tune: Allowlist monitoring, update, SSO, and management domains; adjust cadence and prevalence.

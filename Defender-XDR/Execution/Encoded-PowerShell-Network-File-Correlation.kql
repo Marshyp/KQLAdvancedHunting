@@ -1,7 +1,20 @@
 // Title: Encoded PowerShell followed by network and file creation
-// Severity: High | ATT&CK: T1059.001, T1105
-// Data: DeviceProcessEvents, DeviceNetworkEvents, DeviceFileEvents | Tune: Exclude managed deployment scripts by exact chain.
-let ps=DeviceProcessEvents | where Timestamp>ago(1d) and FileName in~ ("powershell.exe","pwsh.exe") and ProcessCommandLine has_any ("-enc","-encodedcommand","FromBase64String") | project PSTime=Timestamp,DeviceId,DeviceName,AccountName,ProcessId,ProcessCommandLine;
-let net=DeviceNetworkEvents | where Timestamp>ago(1d) and ActionType=="ConnectionSuccess" | project NetTime=Timestamp,DeviceId,InitiatingProcessId,RemoteUrl,RemoteIP;
-let files=DeviceFileEvents | where Timestamp>ago(1d) and ActionType=="FileCreated" | project FileTime=Timestamp,DeviceId,InitiatingProcessId,FileName,FolderPath,SHA1;
-ps | join kind=inner net on DeviceId | where InitiatingProcessId==ProcessId and NetTime between (PSTime..PSTime+15m) | join kind=inner files on DeviceId | where InitiatingProcessId1==ProcessId and FileTime between (PSTime..PSTime+30m) | project FileTime,NetTime,PSTime,DeviceName,AccountName,ProcessCommandLine,RemoteUrl,RemoteIP,FileName,FolderPath,SHA1
+// Severity: High
+// ATT&CK: T1059.001, T1105
+// Data: DeviceProcessEvents, DeviceNetworkEvents, DeviceFileEvents
+// Tune: Exclude managed deployment scripts by exact chain.
+let ps = DeviceProcessEvents
+| where Timestamp>ago(1d) and FileName in~ ("powershell.exe","pwsh.exe") and ProcessCommandLine has_any ("-enc","-encodedcommand","FromBase64String")
+| project PSTime=Timestamp,DeviceId,DeviceName,AccountName,ProcessId,ProcessCommandLine;
+let net = DeviceNetworkEvents
+| where Timestamp>ago(1d) and ActionType=="ConnectionSuccess"
+| project NetTime=Timestamp,DeviceId,InitiatingProcessId,RemoteUrl,RemoteIP;
+let files = DeviceFileEvents
+| where Timestamp>ago(1d) and ActionType=="FileCreated"
+| project FileTime=Timestamp,DeviceId,InitiatingProcessId,FileName,FolderPath,SHA1;
+ps
+| join kind=inner net on DeviceId
+| where InitiatingProcessId==ProcessId and NetTime between (PSTime..PSTime+15m)
+| join kind=inner files on DeviceId
+| where InitiatingProcessId1==ProcessId and FileTime between (PSTime..PSTime+30m)
+| project FileTime,NetTime,PSTime,DeviceName,AccountName,ProcessCommandLine,RemoteUrl,RemoteIP,FileName,FolderPath,SHA1

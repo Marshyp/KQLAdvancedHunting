@@ -1,5 +1,6 @@
 // Title: Encoded or obfuscated PowerShell execution
-// Severity: High | ATT&CK: T1059.001 PowerShell, T1027 Obfuscated Files or Information
+// Severity: High
+// ATT&CK: T1059.001 PowerShell, T1027 Obfuscated Files or Information
 // Data: DeviceProcessEvents (Defender for Endpoint)
 // Description: Finds PowerShell launched with common encoding, hidden-window, or in-memory decoding indicators.
 // Tune: Exclude tightly scoped administration scripts only by known parent, signer, account, and command pattern.

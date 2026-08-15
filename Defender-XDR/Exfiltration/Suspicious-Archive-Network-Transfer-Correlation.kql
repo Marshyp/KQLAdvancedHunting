@@ -1,5 +1,14 @@
 // Title: Suspicious archive followed by network transfer
-// Severity: High | ATT&CK: T1560.001, T1041
-// Data: DeviceFileEvents, DeviceNetworkEvents | Tune: Allowlist backup and sanctioned transfer tools.
-let archives=DeviceFileEvents | where Timestamp>ago(1d) and FileName matches regex @"(?i)\.(zip|7z|rar|tar|gz)$" and FileSize>50000000 | project ArchiveTime=Timestamp,DeviceId,DeviceName,Account=InitiatingProcessAccountName,ArchivePath=FolderPath,ArchiveSize=FileSize,Process=InitiatingProcessFileName,ProcessId=InitiatingProcessId;
-archives | join kind=inner (DeviceNetworkEvents | where Timestamp>ago(1d) and ActionType=="ConnectionSuccess" | project TransferTime=Timestamp,DeviceId,InitiatingProcessId,RemoteUrl,RemoteIP,RemotePort,Protocol) on DeviceId | where TransferTime between (ArchiveTime..ArchiveTime+60m) and (InitiatingProcessId==ProcessId or RemotePort in (21,22,443,445)) | project TransferTime,ArchiveTime,DeviceName,Account,ArchivePath,ArchiveSize,Process,RemoteUrl,RemoteIP,RemotePort,Protocol
+// Severity: High
+// ATT&CK: T1560.001, T1041
+// Data: DeviceFileEvents, DeviceNetworkEvents
+// Tune: Allowlist backup and sanctioned transfer tools.
+let archives = DeviceFileEvents
+| where Timestamp>ago(1d) and FileName matches regex @"(?i)\.(zip|7z|rar|tar|gz)$" and FileSize>50000000
+| project ArchiveTime=Timestamp,DeviceId,DeviceName,Account=InitiatingProcessAccountName,ArchivePath=FolderPath,ArchiveSize=FileSize,Process=InitiatingProcessFileName,ProcessId=InitiatingProcessId;
+archives
+| join kind=inner (DeviceNetworkEvents
+| where Timestamp>ago(1d) and ActionType=="ConnectionSuccess"
+| project TransferTime=Timestamp,DeviceId,InitiatingProcessId,RemoteUrl,RemoteIP,RemotePort,Protocol) on DeviceId
+| where TransferTime between (ArchiveTime..ArchiveTime+60m) and (InitiatingProcessId==ProcessId or RemotePort in (21,22,443,445))
+| project TransferTime,ArchiveTime,DeviceName,Account,ArchivePath,ArchiveSize,Process,RemoteUrl,RemoteIP,RemotePort,Protocol

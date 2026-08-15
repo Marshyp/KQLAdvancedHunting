@@ -1,5 +1,6 @@
 // Title: Large archive staging in a user-writable location
-// Severity: Medium | ATT&CK: T1560.001 Archive Collected Data
+// Severity: Medium
+// ATT&CK: T1560.001 Archive Collected Data
 // Data: DeviceFileEvents (Defender for Endpoint)
 // Tune: Adjust size threshold and allowlist approved packaging, backup, and software-build processes.
 let minimumSize = 100 * 1024 * 1024;
