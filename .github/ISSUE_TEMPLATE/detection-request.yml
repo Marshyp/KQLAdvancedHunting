@@ -1,0 +1,27 @@
+name: Detection request
+description: Propose a new detection or improvement
+title: "[Detection]: "
+labels: [enhancement, detection]
+body:
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Threat hypothesis
+      description: What attacker behavior should this detect?
+    validations:
+      required: true
+  - type: textarea
+    id: telemetry
+    attributes:
+      label: Required telemetry
+      description: Tables, connectors, and relevant fields.
+    validations:
+      required: true
+  - type: input
+    id: attack
+    attributes:
+      label: MITRE ATT&CK technique(s)
+  - type: textarea
+    id: fp
+    attributes:
+      label: Expected false positives and tuning
