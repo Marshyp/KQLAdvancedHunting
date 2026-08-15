@@ -1,0 +1,38 @@
+id: 3225f7bd-c72f-40ca-a806-b2628dd4b6ba
+name: Azure role assignment followed by privileged resource operation
+description: Correlates a successful role assignment with a subsequent write or delete by the same caller.
+severity: High
+status: Available
+requiredDataConnectors:
+  - connectorId: AzureActivity
+    dataTypes: [AzureActivity]
+queryFrequency: PT15M
+queryPeriod: PT1H
+triggerOperator: gt
+triggerThreshold: 0
+tactics: [PrivilegeEscalation, Impact]
+relevantTechniques: [T1098, T1496]
+query: |
+  let assignments = AzureActivity
+  | where TimeGenerated > ago(1h)
+  | where ActivityStatusValue =~ "Success" and OperationNameValue =~ "MICROSOFT.AUTHORIZATION/ROLEASSIGNMENTS/WRITE"
+  | project AssignmentTime=TimeGenerated, Caller, CallerIpAddress, CorrelationId, SubscriptionId, AssignmentResourceId=_ResourceId;
+  assignments
+  | join kind=inner (AzureActivity
+      | where TimeGenerated > ago(1h) and ActivityStatusValue =~ "Success"
+      | where OperationNameValue endswith "/WRITE" or OperationNameValue endswith "/DELETE"
+      | where OperationNameValue !~ "MICROSOFT.AUTHORIZATION/ROLEASSIGNMENTS/WRITE"
+      | project OperationTime=TimeGenerated, Caller, OperationNameValue, ResourceGroup, ResourceId=_ResourceId, OperationIp=CallerIpAddress) on Caller
+  | where OperationTime between (AssignmentTime .. AssignmentTime + 1h)
+  | project OperationTime, AssignmentTime, Caller, CallerIpAddress, OperationIp, OperationNameValue, ResourceGroup, ResourceId, AssignmentResourceId, SubscriptionId, CorrelationId
+entityMappings:
+  - entityType: Account
+    fieldMappings:
+      - identifier: FullName
+        columnName: Caller
+  - entityType: IP
+    fieldMappings:
+      - identifier: Address
+        columnName: CallerIpAddress
+version: 1.0.0
+kind: Scheduled
